@@ -79,7 +79,7 @@ const Main = (props) => {
         </div>
         <div className="element2">
           <h1 className="text-3xl font-bold text-red-500 mb-4">
-            {sliceWords[1].split("").map((char, index) => (
+            {sliceWords[1]?.split("").map((char, index) => (
               <span key={index} className={char === inputText[index] ? "text-green-500" : ""}>
                 {char}
               </span>
