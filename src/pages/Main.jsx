@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import ApiClient from "../ApiClient";
+import "./css/Main.css";
 
 const Main = (props) => {
   const [word, setWord] = useState(""); // Word to type
@@ -8,10 +9,11 @@ const Main = (props) => {
   const [updateHalfway, setUpdateHalfway] = useState(false);
   const [startTime, setStartTime] = useState(null);
   const [typeSpeed, setTypeSpeed] = useState(0); // words per minute
+  const [sliceWords, setSliceWords] = useState([]); // [firstHalf, word, secondHalf]
 
   // Fetch single word from the API
   const fetchWord = async () => {
-    const response = await ApiClient.getWords(10);
+    const response = await ApiClient.getWords(20);
     console.log(response.data);
     setWords(response.data);
   };
@@ -21,12 +23,16 @@ const Main = (props) => {
   }, [words]);
 
   useEffect(() => {
+    splitWords(words, word);
+  }, [word]);
+
+  useEffect(() => {
     fetchWord();
   }, [updateHalfway]);
 
   // Handle input change
   const handleChange = (event) => {
-    setInputText(event.target.value);
+    setInputText(event.target.value.toLowerCase());
   };
 
   // Handle button click
@@ -50,18 +56,44 @@ const Main = (props) => {
   const handleKeyPress = (event) => {
     // check if value is the same as word
     if (inputText === word) {
-      if (event.key === "Enter") {
+      if (event.key === "Enter" || event.keyCode === 13) {
         event.preventDefault();
         handleClick();
       }
     }
   };
 
+  // Split words
+  const splitWords = (words, word) => {
+    const index = words.indexOf(word);
+    const firstHalf = words.slice(0, index).join(" ");
+    const secondHalf = words.slice(index + 1, words.length).join(" ");
+    setSliceWords([firstHalf, word, secondHalf]);
+  };
+
   return (
-    <div className="flex items-center justify-center h-screen">
+    <div className="flex items-center justify-center flex-col h-screen">
+      <div className="flex items-center justify-center gap-4 wordsBox">
+        <div className="element1">
+          <h1 className="text-3xl font-bold text-black mb-4 whitespace-nowrap">{sliceWords[0]}</h1>
+        </div>
+        <div className="element2">
+          <h1 className="text-3xl font-bold text-red-500 mb-4">
+            {sliceWords[1].split("").map((char, index) => (
+              <span key={index} className={char === inputText[index] ? "text-green-500" : ""}>
+                {char}
+              </span>
+            ))}
+          </h1>
+        </div>
+        <div className="element3">
+          <h1 className="text-3xl font-bold text-black mb-4 whitespace-nowrap">{sliceWords[2]}</h1>
+        </div>
+      </div>
+
       <div className="bg-gray-500 rounded-lg shadow-lg p-6">
         <div className="flex items-center justify-center gap-4">
-          <h1 className="text-3xl font-bold text-white mb-4">{word}</h1>
+          {/* <h1 className="text-3xl font-bold text-white mb-4">{word}</h1> */}
           <h1 className="text-3xl font-bold text-white mb-4">{typeSpeed} wpm</h1>
         </div>
         <input
